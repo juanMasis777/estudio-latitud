@@ -229,20 +229,39 @@ function TarjetaEscena({ escena, fuentes, onCambiar }) {
   const [resultados, setResultados] = useState([]);
   const [buscando, setBuscando] = useState(false);
   const [error, setError] = useState("");
+  const [aviso, setAviso] = useState("");
 
+  async function pedir(q, f) {
+    const res = await fetch("/api/buscar", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ consulta: q, fuente: f }),
+    });
+    const datos = await res.json();
+    if (!res.ok) throw new Error(datos.error);
+    return datos.resultados;
+  }
+
+  // Si una búsqueda no da resultados, prueba sola las otras sugerencias de la escena.
   async function buscar(q = consulta, f = fuente) {
     setBuscando(true);
     setError("");
+    setAviso("");
     try {
-      const res = await fetch("/api/buscar", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ consulta: q, fuente: f }),
-      });
-      const datos = await res.json();
-      if (!res.ok) throw new Error(datos.error);
-      setResultados(datos.resultados);
-      if (datos.resultados.length === 0) setError("Sin resultados. Prueba otra consulta o fuente.");
+      const intentos = [q, ...escena.consultas.filter((c) => c !== q)];
+      for (const intento of intentos) {
+        const resultados = await pedir(intento, f);
+        if (resultados.length > 0) {
+          setResultados(resultados);
+          if (intento !== q) {
+            setConsulta(intento);
+            setAviso(`"${q}" no dio resultados; se muestran los de "${intento}".`);
+          }
+          return;
+        }
+      }
+      setResultados([]);
+      setError("Sin resultados. Prueba una consulta más corta (ej. un nombre de lugar) u otra fuente.");
     } catch (e) {
       setError(e.message);
     } finally {
@@ -340,6 +359,7 @@ function TarjetaEscena({ escena, fuentes, onCambiar }) {
       </div>
 
       {error && <p className="mt-2 text-sm text-red-400">{error}</p>}
+      {aviso && <p className="mt-2 text-sm text-amber-400">{aviso}</p>}
 
       {resultados.length > 0 && (
         <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
