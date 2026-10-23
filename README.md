@@ -1,36 +1,64 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Estudio Latitud
 
-## Getting Started
+Herramienta personal de producción para el canal **Latitud Oscura**: convierte un guion en escenas, busca imágenes y clips con licencia para cada una y (en próximas fases) arma el video.
 
-First, run the development server:
+Corre en tu PC. No se despliega en Vercel porque el render de video necesita FFmpeg y procesos largos.
 
-```bash
+## Estado
+
+| Fase | Qué hace | Estado |
+|---|---|---|
+| 1 | Guion → escenas con Claude · búsqueda en Pexels (videos y fotos) y Wikimedia Commons · selección por escena · créditos | ✅ |
+| 2 | Descarga de recursos · recortes de 10 s con FFmpeg · alinear escenas con tu narración | Pendiente |
+| 3 | Render del video (Ken Burns, subtítulos, música) | Pendiente |
+| 4 | Imágenes IA de respaldo · Library of Congress · Internet Archive | Pendiente |
+
+## Requisitos
+
+- Node.js 20 o superior
+- Una clave de la API de Anthropic: https://console.anthropic.com/
+- Una clave gratuita de Pexels: https://www.pexels.com/api/
+
+## Instalación (Windows, PowerShell)
+
+```powershell
+cd estudio-latitud
+npm install
+copy .env.example .env.local
+code .env.local   # pega tus claves y guarda
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abre http://localhost:3000
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## Cómo se usa
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Escribe el título y pega el guion completo (con tus indicaciones de edición; Claude solo toma la narración).
+2. Pulsa **Dividir en escenas**. Cada escena trae duración estimada, tipo (histórica o ambiente) y 3 búsquedas en inglés.
+3. En cada escena, toca una búsqueda o escribe la tuya, elige la fuente y haz clic en el recurso que quieras.
+4. Marca **Usar imagen IA** si no encuentras material real.
+5. **Ver créditos** genera el texto para la descripción de YouTube.
 
-## Learn More
+Los proyectos se guardan automáticamente en `proyectos/<titulo>.json` (no se suben a GitHub).
 
-To learn more about Next.js, take a look at the following resources:
+## Reglas de uso de las fuentes
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Pexels**: hay que acreditar a Pexels y, cuando sea posible, al autor. Las personas identificables no pueden aparecer bajo una mala luz (delitos, enfermedad, etc.). En escenas marcadas como *tema sensible*, usa solo lugares, objetos o paisajes.
+- **Wikimedia Commons**: cada archivo tiene su licencia. La app descarta automáticamente las licencias no comerciales (NC) y sin obras derivadas (ND). Las CC BY y CC BY-SA exigen atribución: los créditos ya la incluyen.
+- La duración de cada escena es una **estimación** (~2.5 palabras por segundo). En la Fase 2 se ajusta con tu audio real.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Estructura
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+app/
+  page.js                 Interfaz
+  api/escenas/            POST guion → escenas (Claude)
+  api/buscar/             POST consulta + fuente → resultados
+  api/proyectos/          GET lista · PUT guardar
+  api/proyectos/[id]/     GET un proyecto
+lib/
+  claude.js               División del guion en escenas
+  proyectos.js            Guardado en JSON local
+  fuentes/pexels.js
+  fuentes/wikimedia.js
+```
