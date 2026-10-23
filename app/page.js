@@ -2,12 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-const FUENTES = [
-  { id: "pexels-video", nombre: "Videos · Pexels" },
-  { id: "pexels-foto", nombre: "Fotos · Pexels" },
-  { id: "wikimedia", nombre: "Históricas · Wikimedia" },
-];
-
 function formatoTiempo(segundos = 0) {
   const m = Math.floor(segundos / 60);
   const s = Math.round(segundos % 60);
@@ -154,6 +148,14 @@ function Encabezado() {
 
 function EditorProyecto({ proyecto, guardado, onVolver, onActualizarEscena }) {
   const [mostrarCreditos, setMostrarCreditos] = useState(false);
+  const [fuentes, setFuentes] = useState([]);
+
+  useEffect(() => {
+    fetch("/api/buscar")
+      .then((r) => r.json())
+      .then((d) => setFuentes(d.fuentes || []))
+      .catch(() => {});
+  }, []);
   const total = proyecto.escenas.reduce((s, e) => s + e.duracion_estimada, 0);
   const listas = proyecto.escenas.filter((e) => e.seleccion || e.necesita_ia).length;
 
@@ -181,10 +183,11 @@ function EditorProyecto({ proyecto, guardado, onVolver, onActualizarEscena }) {
       {mostrarCreditos && <Creditos escenas={proyecto.escenas} />}
 
       <div className="mt-6 space-y-6">
-        {proyecto.escenas.map((escena) => (
+        {fuentes.length > 0 && proyecto.escenas.map((escena) => (
           <TarjetaEscena
             key={escena.id}
             escena={escena}
+            fuentes={fuentes}
             onCambiar={(cambios) => onActualizarEscena(escena.id, cambios)}
           />
         ))}
@@ -192,6 +195,10 @@ function EditorProyecto({ proyecto, guardado, onVolver, onActualizarEscena }) {
 
       <p className="mt-10 text-xs text-stone-500">
         Imágenes y videos de{" "}
+        <a href="https://pixabay.com" className="underline" target="_blank" rel="noreferrer">
+          Pixabay
+        </a>
+        ,{" "}
         <a href="https://www.pexels.com" className="underline" target="_blank" rel="noreferrer">
           Pexels
         </a>{" "}
@@ -210,9 +217,15 @@ function EditorProyecto({ proyecto, guardado, onVolver, onActualizarEscena }) {
   );
 }
 
-function TarjetaEscena({ escena, onCambiar }) {
+function fuenteInicial(escena, fuentes) {
+  const ids = fuentes.map((f) => f.id);
+  if (escena.tipo === "historica" && ids.includes("wikimedia")) return "wikimedia";
+  return ids.find((id) => id.endsWith("-video")) || ids[0];
+}
+
+function TarjetaEscena({ escena, fuentes, onCambiar }) {
   const [consulta, setConsulta] = useState(escena.consultas[0] || "");
-  const [fuente, setFuente] = useState(escena.tipo === "historica" ? "wikimedia" : "pexels-video");
+  const [fuente, setFuente] = useState(() => fuenteInicial(escena, fuentes));
   const [resultados, setResultados] = useState([]);
   const [buscando, setBuscando] = useState(false);
   const [error, setError] = useState("");
@@ -247,7 +260,7 @@ function TarjetaEscena({ escena, onCambiar }) {
         <span className="rounded bg-stone-800 px-2 py-0.5 text-xs">{escena.tipo}</span>
         {escena.personas_sensibles && (
           <span className="rounded bg-red-950 px-2 py-0.5 text-xs text-red-300">
-            Tema sensible: no uses personas identificables de Pexels
+            Tema sensible: no uses personas identificables de bancos de imágenes
           </span>
         )}
       </div>
@@ -303,7 +316,7 @@ function TarjetaEscena({ escena, onCambiar }) {
           onChange={(e) => setFuente(e.target.value)}
           className="rounded-lg border border-stone-700 bg-stone-950 px-2 py-1.5 text-sm"
         >
-          {FUENTES.map((f) => (
+          {fuentes.map((f) => (
             <option key={f.id} value={f.id}>
               {f.nombre}
             </option>

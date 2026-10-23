@@ -8,7 +8,7 @@ Corre en tu PC. No se despliega en Vercel porque el render de video necesita FFm
 
 | Fase | Qué hace | Estado |
 |---|---|---|
-| 1 | Guion → escenas con Claude · búsqueda en Pexels (videos y fotos) y Wikimedia Commons · selección por escena · créditos | ✅ |
+| 1 | Guion → escenas con Claude · búsqueda en Pixabay (videos y fotos), Wikimedia Commons y Pexels (opcional) · selección por escena · créditos | ✅ |
 | 2 | Descarga de recursos · recortes de 10 s con FFmpeg · alinear escenas con tu narración | Pendiente |
 | 3 | Render del video (Ken Burns, subtítulos, música) | Pendiente |
 | 4 | Imágenes IA de respaldo · Library of Congress · Internet Archive | Pendiente |
@@ -17,7 +17,8 @@ Corre en tu PC. No se despliega en Vercel porque el render de video necesita FFm
 
 - Node.js 20 o superior
 - Una clave de la API de Anthropic: https://console.anthropic.com/
-- Una clave gratuita de Pexels: https://www.pexels.com/api/
+- Una clave gratuita de Pixabay: https://pixabay.com/api/docs/ (inicia sesión y aparece en esa página)
+- Opcional: clave de Pexels (la emisión de claves nuevas está pausada desde oct 2026)
 
 ## Instalación (Windows, PowerShell)
 
@@ -43,6 +44,7 @@ Los proyectos se guardan automáticamente en `proyectos/<titulo>.json` (no se su
 
 ## Reglas de uso de las fuentes
 
+- **Pixabay**: uso gratuito y con modificaciones; no exige atribución (la app la incluye igual). Prohíbe usos engañosos o inmorales, en especial con personas reconocibles. Las fotos llegan a 1280 px como máximo; para fotos históricas usa Wikimedia.
 - **Pexels**: hay que acreditar a Pexels y, cuando sea posible, al autor. Las personas identificables no pueden aparecer bajo una mala luz (delitos, enfermedad, etc.). En escenas marcadas como *tema sensible*, usa solo lugares, objetos o paisajes.
 - **Wikimedia Commons**: cada archivo tiene su licencia. La app descarta automáticamente las licencias no comerciales (NC) y sin obras derivadas (ND). Las CC BY y CC BY-SA exigen atribución: los créditos ya la incluyen.
 - La duración de cada escena es una **estimación** (~2.5 palabras por segundo). En la Fase 2 se ajusta con tu audio real.
@@ -59,6 +61,7 @@ app/
 lib/
   claude.js               División del guion en escenas
   proyectos.js            Guardado en JSON local
+  fuentes/pixabay.js
   fuentes/pexels.js
   fuentes/wikimedia.js
 ```
