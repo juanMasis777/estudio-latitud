@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { buscarVideosPexels, buscarFotosPexels } from "@/lib/fuentes/pexels";
 import { buscarVideosPixabay, buscarFotosPixabay } from "@/lib/fuentes/pixabay";
 import { buscarWikimedia } from "@/lib/fuentes/wikimedia";
+import { buscarLoc } from "@/lib/fuentes/loc";
+import { buscarArchive } from "@/lib/fuentes/archive";
 
 // Cada fuente indica qué variable de entorno necesita (null = ninguna).
 // Las fuentes sin clave configurada no aparecen en la interfaz.
@@ -9,6 +11,8 @@ const FUENTES = {
   "pixabay-video": { nombre: "Videos · Pixabay", buscar: buscarVideosPixabay, clave: "PIXABAY_API_KEY" },
   "pixabay-foto": { nombre: "Fotos · Pixabay", buscar: buscarFotosPixabay, clave: "PIXABAY_API_KEY" },
   wikimedia: { nombre: "Históricas · Wikimedia", buscar: buscarWikimedia, clave: null },
+  loc: { nombre: "Históricas · Library of Congress", buscar: buscarLoc, clave: null },
+  archive: { nombre: "Películas antiguas · Internet Archive", buscar: buscarArchive, clave: null },
   "pexels-video": { nombre: "Videos · Pexels", buscar: buscarVideosPexels, clave: "PEXELS_API_KEY" },
   "pexels-foto": { nombre: "Fotos · Pexels", buscar: buscarFotosPexels, clave: "PEXELS_API_KEY" },
 };
